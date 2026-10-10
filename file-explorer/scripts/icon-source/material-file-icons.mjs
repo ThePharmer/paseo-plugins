@@ -1,8 +1,7 @@
-// Copied from Paseo (https://github.com/getpaseo/paseo), Apache-2.0,
-// Copyright (c) 2025-present Mohamed Boudra.
-// Source: packages/app/src/components/material-file-icons.ts at commit 93dc399a383b3f2445fc67c3bd38370dfb896fe1.
-// (identical at upstream tag v0.11.1, ab10a6694ccf068959d1a6b67b6c915e21a9fe91)
-// Changes: type annotations removed and the two tables exported so plain Node can import this
+// Copied from getpaseo/paseo@ab10a6694ccf068959d1a6b67b6c915e21a9fe91 (v0.11.1)
+// packages/app/src/components/material-file-icons.ts (Apache-2.0, Copyright (c) 2025-present
+// Mohamed Boudra).
+// Modified: type annotations removed and the two tables exported so plain Node can import this
 // file; the lookup functions live in client/file-icon.tsx instead. The tables themselves are
 // unchanged.
 //

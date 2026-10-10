@@ -49,7 +49,7 @@ export function flattenExplorerTree({
 
   const rows: ExplorerTreeRow[] = [];
   // An explicit stack keeps very deep trees off the call stack.
-  const pending = rowsForDirectory(root, 0, sortOption, showHiddenFiles).reverse();
+  const pending = rowsForDirectory(root, 0, sortOption, showHiddenFiles).toReversed();
 
   while (pending.length > 0) {
     const row = pending.pop();

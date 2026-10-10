@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Image, View, type LayoutChangeEvent } from "react-native";
 import { fitImageSize, type Size } from "./image-size";
 import { IMAGE_INSET, type ViewerStyles } from "./styles";
@@ -16,12 +16,12 @@ export function ImageView({ uri, onError, styles }: ImageViewProps) {
   const [bounds, setBounds] = useState<Size | null>(null);
   const natural = useNaturalSize(uri);
 
-  function measure(event: LayoutChangeEvent) {
+  const measure = useCallback((event: LayoutChangeEvent) => {
     const width = event.nativeEvent.layout.width - IMAGE_INSET * 2;
     const height = event.nativeEvent.layout.height - IMAGE_INSET * 2;
     // Hidden panes report zero; keep the last real measurement.
     if (width > 0 && height > 0) setBounds({ width, height });
-  }
+  }, []);
 
   const displayed = useMemo(() => {
     if (!bounds) return null;
@@ -32,13 +32,17 @@ export function ImageView({ uri, onError, styles }: ImageViewProps) {
     () => (displayed ? { uri, width: displayed.width, height: displayed.height } : null),
     [displayed, uri],
   );
+  const imageStyle = useMemo(
+    () => (displayed ? { width: displayed.width, height: displayed.height } : null),
+    [displayed],
+  );
 
   return (
     <View style={styles.imageFrame} onLayout={measure}>
       {source ? (
         <Image
           source={source}
-          style={{ width: source.width, height: source.height }}
+          style={imageStyle}
           resizeMode="contain"
           onError={onError}
           accessibilityIgnoresInvertColors

@@ -25,7 +25,7 @@ export function fileKey({ root, path }: FileRef): string {
 export function filePanelId(file: FileRef): string {
   const bytes = utf8Bytes(fileKey(file));
   const forward = fnv1a(bytes);
-  const backward = fnv1a(bytes.slice().reverse());
+  const backward = fnv1a(bytes.toReversed());
   return `${FILE_PANEL_PREFIX}${toFixedBase36(forward)}${toFixedBase36(backward)}`;
 }
 

@@ -20,8 +20,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 ## Paseo
 
 The icon table, extension map, file-extension rule, and colour toning are copied or ported from
-[Paseo](https://github.com/getpaseo/paseo) at commit `93dc399a383b3f2445fc67c3bd38370dfb896fe1`
-(these files are identical at upstream tag `v0.11.1`, `ab10a6694ccf068959d1a6b67b6c915e21a9fe91`)
+[Paseo](https://github.com/getpaseo/paseo) at commit `ab10a6694ccf068959d1a6b67b6c915e21a9fe91` (v0.11.1)
 (`packages/app/src/components/material-file-icons.ts`,
 `packages/app/src/components/file-icon-svg.ts`, `packages/app/src/utils/color.ts`).
 Copyright (c) 2025-present Mohamed Boudra. Licensed under the Apache License, Version 2.0, the same

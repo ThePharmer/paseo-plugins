@@ -1,0 +1,70 @@
+name: E2E
+
+on:
+  push:
+    branches: [main]
+  # Every base branch: PRs are stacked onto feature branches.
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: e2e-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    name: e2e (paseo ${{ matrix.paseo }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        # The plugin's floor (paseo-plugin.json requirements) and the newest release.
+        paseo: ["0.11.1", "latest"]
+    env:
+      PASEO_VERSION: ${{ matrix.paseo }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: |
+            file-explorer/package-lock.json
+            e2e/package-lock.json
+
+      - name: Install plugin dependencies
+        working-directory: file-explorer
+        run: node ../scripts/npm-retry.mjs ci
+
+      - name: Install e2e dependencies
+        working-directory: e2e
+        run: node ../scripts/npm-retry.mjs ci
+
+      - name: Install Paseo ${{ matrix.paseo }}
+        working-directory: e2e
+        run: npm run install:paseo
+
+      - name: Install Chromium
+        working-directory: e2e
+        run: npx playwright install --with-deps chromium
+
+      - name: Run e2e tests
+        working-directory: e2e
+        run: npm test
+
+      - name: Upload report and daemon log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-paseo-${{ matrix.paseo }}
+          path: |
+            e2e/playwright-report/
+            e2e/test-results/
+            e2e/artifacts/
+          if-no-files-found: ignore
+          retention-days: 14

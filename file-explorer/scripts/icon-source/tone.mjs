@@ -1,10 +1,8 @@
-// Ported from Paseo (https://github.com/getpaseo/paseo), Apache-2.0,
-// Copyright (c) 2025-present Mohamed Boudra.
-// Sources at commit 93dc399a383b3f2445fc67c3bd38370dfb896fe1:
-// (identical at upstream tag v0.11.1, ab10a6694ccf068959d1a6b67b6c915e21a9fe91)
-// - packages/app/src/utils/color.ts: the OKLab helpers, parseHexColor, desaturateHexColor.
-// - packages/app/src/components/file-icon-svg.ts: ICON_CHROMA, HEX_COLOR_PATTERN, toneSvg.
-// Changes: TypeScript annotations removed so plain Node can run this file; unused helpers
+// Ported from getpaseo/paseo@ab10a6694ccf068959d1a6b67b6c915e21a9fe91 (v0.11.1)
+// packages/app/src/utils/color.ts (the OKLab helpers, parseHexColor, desaturateHexColor) and
+// packages/app/src/components/file-icon-svg.ts (ICON_CHROMA, HEX_COLOR_PATTERN, toneSvg)
+// (Apache-2.0, Copyright (c) 2025-present Mohamed Boudra).
+// Modified: TypeScript annotations removed so plain Node can run this file; unused helpers
 // (hexColorWithAlpha) and the runtime cache dropped. The maths and constants are unchanged.
 //
 // Colour maths in OKLab. Holding L fixed and scaling the a/b vector moves a colour toward grey

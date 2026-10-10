@@ -1,5 +1,6 @@
 import type { PluginClientContext, PluginSidebarItemProps } from "@getpaseo/plugin/client";
 import { SidebarRow } from "@getpaseo/plugin/client/ui";
+import { useCallback } from "react";
 import { openFilesRpc } from "./shared/open-files";
 import {
   createFallbackPanelContribution,
@@ -25,11 +26,12 @@ import { createFileTabs } from "./client/tabs/registry";
 
 function BrowseItem({ currentScreen, openScreen }: PluginSidebarItemProps) {
   const screenId = currentScreen?.screenId;
+  const openBrowse = useCallback(() => openScreen({ screenId: BROWSE_SCREEN_ID }), [openScreen]);
   return (
     <SidebarRow
       icon="FolderTree"
       active={screenId === BROWSE_SCREEN_ID || screenId === FILE_SCREEN_ID}
-      onPress={() => openScreen({ screenId: BROWSE_SCREEN_ID })}
+      onPress={openBrowse}
     />
   );
 }

@@ -1,6 +1,6 @@
 import type { PluginHostProps } from "@getpaseo/plugin/client";
 import { copyText, Icon, Modal, useToast } from "@getpaseo/plugin/client/react-native";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import type { FileExplorerEntry } from "../../shared/rpc";
 import { canSaveFiles } from "../download/save-file";
@@ -78,14 +78,22 @@ export function EntryActionsModal({
     return list;
   }, [layout.platform, root, saveEntry, entry, toast]);
 
-  function handleOpenChange(next: boolean) {
-    if (!next) onClose();
-  }
+  const handleOpenChange = useCallback(
+    (next: boolean) => {
+      if (!next) onClose();
+    },
+    [onClose],
+  );
+  const iconColor = theme.colors.foregroundMuted;
+  const modalIcon = useMemo(
+    () => <EntryIcon entry={entry} color={iconColor} />,
+    [entry, iconColor],
+  );
 
   return (
     <Modal
       title={entry?.name ?? ""}
-      icon={<EntryIcon entry={entry} color={theme.colors.foregroundMuted} />}
+      icon={modalIcon}
       open={open && entry !== null}
       onOpenChange={handleOpenChange}
     >
@@ -95,7 +103,7 @@ export function EntryActionsModal({
             key={action.id}
             action={action}
             styles={styles}
-            iconColor={theme.colors.foregroundMuted}
+            iconColor={iconColor}
             onDone={onClose}
           />
         ))}
@@ -118,17 +126,19 @@ interface ActionRowProps {
 
 function ActionRow({ action, styles, iconColor, onDone }: ActionRowProps) {
   const [hovered, setHovered] = useState(false);
-  function press() {
+  const press = useCallback(() => {
     onDone();
     action.run();
-  }
+  }, [action, onDone]);
+  const handleHoverIn = useCallback(() => setHovered(true), []);
+  const handleHoverOut = useCallback(() => setHovered(false), []);
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={action.label}
       onPress={press}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
+      onHoverIn={handleHoverIn}
+      onHoverOut={handleHoverOut}
       style={hovered ? [styles.row, styles.rowHovered] : styles.row}
     >
       <View style={styles.rowIcon}>

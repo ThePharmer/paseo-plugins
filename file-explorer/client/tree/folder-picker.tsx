@@ -1,6 +1,6 @@
 import type { PluginHostProps } from "@getpaseo/plugin/client";
 import { Icon, Modal } from "@getpaseo/plugin/client/react-native";
-import { type ReactNode, useMemo, useState } from "react";
+import { type ReactNode, useCallback, useMemo, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import type { AllowedFolder } from "../../shared/rpc";
 
@@ -27,24 +27,30 @@ export function FolderPicker({ folders, active, theme, onSelect, onManage }: Fol
   const styles = useMemo(() => createStyles(theme), [theme]);
   const muted = theme.colors.foregroundMuted;
 
-  function select(root: string) {
-    setOpen(false);
-    onSelect(root);
-  }
-
-  function manage() {
+  const select = useCallback(
+    (root: string) => {
+      setOpen(false);
+      onSelect(root);
+    },
+    [onSelect],
+  );
+  const manage = useCallback(() => {
     setOpen(false);
     onManage();
-  }
+  }, [onManage]);
+  const openPicker = useCallback(() => setOpen(true), []);
+  const handleHoverIn = useCallback(() => setHovered(true), []);
+  const handleHoverOut = useCallback(() => setHovered(false), []);
+  const modalIcon = useMemo(() => <Icon name="FolderTree" size={18} color={muted} />, [muted]);
 
   return (
     <>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={`Folder: ${active.label}. Switch folder`}
-        onPress={() => setOpen(true)}
-        onHoverIn={() => setHovered(true)}
-        onHoverOut={() => setHovered(false)}
+        onPress={openPicker}
+        onHoverIn={handleHoverIn}
+        onHoverOut={handleHoverOut}
         style={hovered ? [styles.trigger, styles.triggerHovered] : styles.trigger}
       >
         <Icon name="FolderOpen" size={16} color={muted} />
@@ -53,12 +59,7 @@ export function FolderPicker({ folders, active, theme, onSelect, onManage }: Fol
         </Text>
         <Icon name="ChevronsUpDown" size={14} color={muted} />
       </Pressable>
-      <Modal
-        title="Allowed folders"
-        icon={<Icon name="FolderTree" size={18} color={muted} />}
-        open={open}
-        onOpenChange={setOpen}
-      >
+      <Modal title="Allowed folders" icon={modalIcon} open={open} onOpenChange={setOpen}>
         <Modal.Content contentContainerStyle={styles.content}>
           {folders.map((folder) => (
             <FolderOption
@@ -67,7 +68,7 @@ export function FolderPicker({ folders, active, theme, onSelect, onManage }: Fol
               selected={folder.root === active.root}
               styles={styles}
               theme={theme}
-              onPress={() => select(folder.root)}
+              onSelect={select}
             />
           ))}
           <OptionRow styles={styles} label="Manage allowed folders" onPress={manage}>
@@ -89,13 +90,14 @@ interface FolderOptionProps {
   selected: boolean;
   styles: PickerStyles;
   theme: PluginHostProps["theme"];
-  onPress(): void;
+  onSelect(root: string): void;
 }
 
-function FolderOption({ folder, selected, styles, theme, onPress }: FolderOptionProps) {
+function FolderOption({ folder, selected, styles, theme, onSelect }: FolderOptionProps) {
   const status = FOLDER_STATUS_LABELS[folder.status];
+  const handlePress = useCallback(() => onSelect(folder.root), [onSelect, folder.root]);
   return (
-    <OptionRow styles={styles} label={folder.label} onPress={onPress} selected={selected}>
+    <OptionRow styles={styles} label={folder.label} onPress={handlePress} selected={selected}>
       <Icon name="Folder" size={16} color={theme.colors.foregroundMuted} />
       <View style={styles.optionText}>
         <Text numberOfLines={1} style={styles.optionLabel}>
@@ -121,14 +123,17 @@ interface OptionRowProps {
 
 function OptionRow({ label, selected = false, styles, onPress, children }: OptionRowProps) {
   const [hovered, setHovered] = useState(false);
+  const accessibilityState = useMemo(() => ({ selected }), [selected]);
+  const handleHoverIn = useCallback(() => setHovered(true), []);
+  const handleHoverOut = useCallback(() => setHovered(false), []);
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={label}
-      accessibilityState={{ selected }}
+      accessibilityState={accessibilityState}
       onPress={onPress}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
+      onHoverIn={handleHoverIn}
+      onHoverOut={handleHoverOut}
       style={hovered ? [styles.option, styles.optionHovered] : styles.option}
     >
       {children}
