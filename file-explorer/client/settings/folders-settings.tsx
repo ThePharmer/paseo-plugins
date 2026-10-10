@@ -9,7 +9,7 @@ import {
   SettingsSection,
 } from "@getpaseo/plugin/client/ui";
 import { useQueryClient } from "@tanstack/react-query";
-import { useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { Text } from "react-native";
 import type { AllowedFolder } from "../../shared/rpc";
 import { type AllowedFolderSetting, explorerSettings } from "../../shared/settings";
@@ -32,6 +32,9 @@ const ACCESS_NOTE =
 export function FoldersSettings({ theme }: PluginSurfaceProps) {
   const settings = useSettings(explorerSettings);
   const textStyle = useMemo(() => ({ color: theme.colors.foregroundMuted }), [theme]);
+  const { reload, reset } = settings;
+  const handleReload = useCallback(() => void reload(), [reload]);
+  const handleReset = useCallback(() => void reset(), [reset]);
 
   if (settings.status === "loading") return <Text style={textStyle}>Loading settings...</Text>;
   if (settings.status !== "ready") {
@@ -42,14 +45,14 @@ export function FoldersSettings({ theme }: PluginSurfaceProps) {
             label="Unable to load allowed folders"
             hint={settings.error}
             actionLabel="Reload"
-            onPress={() => void settings.reload()}
+            onPress={handleReload}
           />
           {settings.status === "invalid" ? (
             <SettingsAction
               label="Reset allowed folders"
               hint="Replaces the stored list with an empty one"
               actionLabel="Reset"
-              onPress={() => void settings.reset()}
+              onPress={handleReset}
             />
           ) : null}
         </SettingsCard>
@@ -67,16 +70,22 @@ function FoldersEditor({ settings }: { settings: ReadySettings }) {
     [folders.data, settings.values.folders],
   );
 
-  async function saveFolders(next: AllowedFolderSetting[]): Promise<boolean> {
-    const saved = await settings.save({ ...settings.values, folders: next }, settings.revision);
-    // Statuses, roots and every open tree depend on this list.
-    if (saved) await queryClient.invalidateQueries({ queryKey: explorerQueryKeys.all });
-    return saved;
-  }
+  const saveFolders = useCallback(
+    async (next: AllowedFolderSetting[]): Promise<boolean> => {
+      const saved = await settings.save({ ...settings.values, folders: next }, settings.revision);
+      // Statuses, roots and every open tree depend on this list.
+      if (saved) await queryClient.invalidateQueries({ queryKey: explorerQueryKeys.all });
+      return saved;
+    },
+    [queryClient, settings],
+  );
 
-  function remove(index: number) {
-    void saveFolders(settings.values.folders.filter((_, candidate) => candidate !== index));
-  }
+  const remove = useCallback(
+    (index: number) => {
+      void saveFolders(settings.values.folders.filter((_, candidate) => candidate !== index));
+    },
+    [saveFolders, settings.values.folders],
+  );
 
   return (
     <>
@@ -86,13 +95,13 @@ function FoldersEditor({ settings }: { settings: ReadySettings }) {
             <SettingsRow label="No folders yet" hint="Add a folder below to browse it in Paseo" />
           ) : (
             settings.values.folders.map((folder, index) => (
-              <SettingsAction
+              <FolderRow
                 key={folder.path}
-                label={folder.label ?? (explorerBasename(folder.path) || folder.path)}
+                folder={folder}
+                index={index}
                 hint={folderHint(folder, statuses[index], folders.isPending)}
-                actionLabel="Remove"
                 disabled={settings.saving}
-                onPress={() => remove(index)}
+                onRemove={remove}
               />
             ))
           )}
@@ -100,6 +109,27 @@ function FoldersEditor({ settings }: { settings: ReadySettings }) {
       </SettingsSection>
       <AddFolder settings={settings} onSave={saveFolders} />
     </>
+  );
+}
+
+interface FolderRowProps {
+  folder: AllowedFolderSetting;
+  index: number;
+  hint: string;
+  disabled: boolean;
+  onRemove(index: number): void;
+}
+
+function FolderRow({ folder, index, hint, disabled, onRemove }: FolderRowProps) {
+  const handleRemove = useCallback(() => onRemove(index), [onRemove, index]);
+  return (
+    <SettingsAction
+      label={folder.label ?? (explorerBasename(folder.path) || folder.path)}
+      hint={hint}
+      actionLabel="Remove"
+      disabled={disabled}
+      onPress={handleRemove}
+    />
   );
 }
 
@@ -115,23 +145,27 @@ function AddFolder({ settings, onSave }: AddFolderProps) {
   const [label, setLabel] = useState("");
   const [pathError, setPathError] = useState<string | null>(null);
 
-  function changePath(text: string) {
+  const changePath = useCallback((text: string) => {
     setPath(text);
     setPathError(null);
-  }
+  }, []);
 
-  async function add() {
-    const draft = validateFolderDraft({ path, label, existing: settings.values.folders });
-    if (draft.status === "invalid") {
-      setPathError(draft.error);
-      return;
+  const existing = settings.values.folders;
+  const add = useCallback(() => {
+    async function run() {
+      const draft = validateFolderDraft({ path, label, existing });
+      if (draft.status === "invalid") {
+        setPathError(draft.error);
+        return;
+      }
+      if (!(await onSave([...existing, draft.folder]))) return;
+      pathInput.current?.replaceText("");
+      labelInput.current?.replaceText("");
+      setPath("");
+      setLabel("");
     }
-    if (!(await onSave([...settings.values.folders, draft.folder]))) return;
-    pathInput.current?.replaceText("");
-    labelInput.current?.replaceText("");
-    setPath("");
-    setLabel("");
-  }
+    void run();
+  }, [existing, label, onSave, path]);
 
   return (
     <SettingsSection title="Add a folder">
@@ -159,7 +193,7 @@ function AddFolder({ settings, onSave }: AddFolderProps) {
           actionLabel={settings.saving ? "Saving..." : "Add"}
           error={settings.saveError}
           disabled={settings.saving}
-          onPress={() => void add()}
+          onPress={add}
         />
       </SettingsCard>
     </SettingsSection>

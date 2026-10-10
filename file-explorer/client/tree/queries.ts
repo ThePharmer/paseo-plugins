@@ -40,7 +40,8 @@ export function useAllowedFolders(): UseQueryResult<AllowedFolder[], Error> {
   // The host pushes settings changes to every client, but only refreshes the settings query.
   // Keying the folder list on the revision makes another client's edit show up here too.
   const settings = useSettings(explorerSettings);
-  const revision = settings.status === "loading" || settings.status === "error" ? null : settings.revision;
+  const revision =
+    settings.status === "loading" || settings.status === "error" ? null : settings.revision;
   return useQuery({
     queryKey: explorerQueryKeys.folders(revision),
     queryFn: async () => (await listFolders({})).folders,

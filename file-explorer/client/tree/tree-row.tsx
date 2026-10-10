@@ -7,7 +7,7 @@
 
 import type { PluginTheme } from "@getpaseo/plugin";
 import { Icon } from "@getpaseo/plugin/client/react-native";
-import { memo, useState } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
 import type { FileExplorerEntry } from "../../shared/rpc";
 import { FileIcon } from "../file-icon";
@@ -51,18 +51,31 @@ export const TreeRow = memo(function TreeRow({
   const showMore = hovered || menuOpen;
   const isDirectory = entry.kind === "directory";
 
+  const accessibilityState = useMemo(
+    () => ({ selected, expanded: isDirectory ? expanded : undefined }),
+    [selected, isDirectory, expanded],
+  );
+  const handlePress = useCallback(() => onPress(entry), [onPress, entry]);
+  const handleOpenMenu = useCallback(() => onOpenMenu(entry), [onOpenMenu, entry]);
+  const handlePressIn = useCallback(() => setPressed(true), []);
+  const handlePressOut = useCallback(() => setPressed(false), []);
+  const handleRowHoverIn = useCallback(() => setRowHovered(true), []);
+  const handleRowHoverOut = useCallback(() => setRowHovered(false), []);
+  const handleMoreHoverIn = useCallback(() => setMoreHovered(true), []);
+  const handleMoreHoverOut = useCallback(() => setMoreHovered(false), []);
+
   return (
     <View style={highlighted ? [styles.row, styles.rowActive] : styles.row}>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={entry.name}
-        accessibilityState={{ selected, expanded: isDirectory ? expanded : undefined }}
-        onPress={() => onPress(entry)}
-        onLongPress={() => onOpenMenu(entry)}
-        onPressIn={() => setPressed(true)}
-        onPressOut={() => setPressed(false)}
-        onHoverIn={() => setRowHovered(true)}
-        onHoverOut={() => setRowHovered(false)}
+        accessibilityState={accessibilityState}
+        onPress={handlePress}
+        onLongPress={handleOpenMenu}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        onHoverIn={handleRowHoverIn}
+        onHoverOut={handleRowHoverOut}
         style={[styles.rowPressable, { paddingLeft: treeRowPaddingLeft(depth) }]}
       >
         <View style={styles.entryIcon}>
@@ -87,9 +100,9 @@ export const TreeRow = memo(function TreeRow({
           accessibilityRole="button"
           accessibilityLabel="More actions"
           hitSlop={4}
-          onPress={() => onOpenMenu(entry)}
-          onHoverIn={() => setMoreHovered(true)}
-          onHoverOut={() => setMoreHovered(false)}
+          onPress={handleOpenMenu}
+          onHoverIn={handleMoreHoverIn}
+          onHoverOut={handleMoreHoverOut}
           // Hidden with opacity, not unmounted, so revealing it never shifts the row.
           style={[
             styles.moreButton,

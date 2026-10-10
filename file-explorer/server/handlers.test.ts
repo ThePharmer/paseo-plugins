@@ -9,12 +9,32 @@ import { createExplorerHandlers } from "./handlers";
 
 type Schema = (typeof explorerSettings)["schema"];
 
+// Windows creates symlinks only with Developer Mode or an elevated token. Run the symlink cases
+// wherever the OS allows them and skip them where it refuses, instead of failing.
+const canSymlink = await probeSymlinks();
+const itWithSymlinks = it.skipIf(!canSymlink);
+
+async function probeSymlinks(): Promise<boolean> {
+  const dir = await mkdtemp(path.join(os.tmpdir(), "file-explorer-symlink-probe-"));
+  try {
+    await writeFile(path.join(dir, "target"), "");
+    await symlink(path.join(dir, "target"), path.join(dir, "link"));
+    return true;
+  } catch {
+    return false;
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+}
+
 function settingsWith(state: PluginSettingsState<Schema>): PluginSettings<Schema> {
   return { read: async () => state, subscribe: () => () => {} };
 }
 
 function handlersFor(folders: AllowedFolderSetting[]) {
-  return createExplorerHandlers(settingsWith({ status: "ready", revision: "1", values: { folders } }));
+  return createExplorerHandlers(
+    settingsWith({ status: "ready", revision: "1", values: { folders } }),
+  );
 }
 
 let sandbox: string;
@@ -76,7 +96,10 @@ describe("listDirectory", () => {
 
     expect(result).toMatchObject({
       status: "ok",
-      directory: { path: "src", entries: [{ name: "index.ts", path: "src/index.ts", kind: "file" }] },
+      directory: {
+        path: "src",
+        entries: [{ name: "index.ts", path: "src/index.ts", kind: "file" }],
+      },
     });
   });
 
@@ -98,7 +121,7 @@ describe("listDirectory", () => {
     });
   });
 
-  it("hides symlinks that resolve outside the allowed folder", async () => {
+  itWithSymlinks("hides symlinks that resolve outside the allowed folder", async () => {
     await symlink(path.join(outside, "secret.txt"), path.join(allowed, "secret-link.txt"));
     await symlink(path.join(allowed, "src", "index.ts"), path.join(allowed, "inside-link.ts"));
     const handlers = handlersFor([{ path: allowed }]);
@@ -121,19 +144,27 @@ describe("readFile", () => {
 
     expect(result).toMatchObject({
       status: "ok",
-      file: { path: "src/index.ts", kind: "text", encoding: "utf-8", content: "export const answer = 42;\n" },
+      file: {
+        path: "src/index.ts",
+        kind: "text",
+        encoding: "utf-8",
+        content: "export const answer = 42;\n",
+      },
     });
   });
 
-  it("refuses to read through a symlink that resolves outside the allowed folder", async () => {
-    await symlink(path.join(outside, "secret.txt"), path.join(allowed, "secret-link.txt"));
-    const handlers = handlersFor([{ path: allowed }]);
+  itWithSymlinks(
+    "refuses to read through a symlink that resolves outside the allowed folder",
+    async () => {
+      await symlink(path.join(outside, "secret.txt"), path.join(allowed, "secret-link.txt"));
+      const handlers = handlersFor([{ path: allowed }]);
 
-    await expect(handlers.readFile({ root: allowed, path: "secret-link.txt" })).resolves.toEqual({
-      status: "error",
-      error: "Access outside of the allowed folder is not allowed",
-    });
-  });
+      await expect(handlers.readFile({ root: allowed, path: "secret-link.txt" })).resolves.toEqual({
+        status: "error",
+        error: "Access outside of the allowed folder is not allowed",
+      });
+    },
+  );
 
   it("refuses an absolute path outside the allowed folder", async () => {
     const handlers = handlersFor([{ path: allowed }]);
@@ -170,7 +201,12 @@ describe("readFileChunk", () => {
     await writeFile(path.join(allowed, "blob.bin"), bytes);
     const handlers = handlersFor([{ path: allowed }]);
 
-    const first = await handlers.readFileChunk({ root: allowed, path: "blob.bin", offset: 0, length: 4 });
+    const first = await handlers.readFileChunk({
+      root: allowed,
+      path: "blob.bin",
+      offset: 0,
+      length: 4,
+    });
     if (first.status !== "ok") throw new Error(JSON.stringify(first));
     const second = await handlers.readFileChunk({
       root: allowed,
@@ -181,8 +217,14 @@ describe("readFileChunk", () => {
     });
     if (second.status !== "ok") throw new Error(JSON.stringify(second));
 
-    expect(Buffer.concat([Buffer.from(first.base64, "base64"), Buffer.from(second.base64, "base64")])).toEqual(bytes);
-    expect(first).toMatchObject({ size: 9, fileName: "blob.bin", mimeType: "application/octet-stream" });
+    expect(
+      Buffer.concat([Buffer.from(first.base64, "base64"), Buffer.from(second.base64, "base64")]),
+    ).toEqual(bytes);
+    expect(first).toMatchObject({
+      size: 9,
+      fileName: "blob.bin",
+      mimeType: "application/octet-stream",
+    });
     expect(second.revision).toBe(first.revision);
   });
 
@@ -190,7 +232,12 @@ describe("readFileChunk", () => {
     const filePath = path.join(allowed, "notes.txt");
     await writeFile(filePath, "first version");
     const handlers = handlersFor([{ path: allowed }]);
-    const first = await handlers.readFileChunk({ root: allowed, path: "notes.txt", offset: 0, length: 4 });
+    const first = await handlers.readFileChunk({
+      root: allowed,
+      path: "notes.txt",
+      offset: 0,
+      length: 4,
+    });
     if (first.status !== "ok") throw new Error(JSON.stringify(first));
 
     await writeFile(filePath, "second, longer version");
@@ -208,18 +255,26 @@ describe("readFileChunk", () => {
   it("returns an empty chunk past the end of the file", async () => {
     const handlers = handlersFor([{ path: allowed }]);
 
-    const result = await handlers.readFileChunk({ root: allowed, path: "src/index.ts", offset: 1000, length: 10 });
+    const result = await handlers.readFileChunk({
+      root: allowed,
+      path: "src/index.ts",
+      offset: 1000,
+      length: 10,
+    });
 
     expect(result).toMatchObject({ status: "ok", base64: "" });
   });
 
-  it("refuses chunks through a symlink that leaves the allowed folder", async () => {
+  itWithSymlinks("refuses chunks through a symlink that leaves the allowed folder", async () => {
     await symlink(path.join(outside, "secret.txt"), path.join(allowed, "secret-link.txt"));
     const handlers = handlersFor([{ path: allowed }]);
 
     await expect(
       handlers.readFileChunk({ root: allowed, path: "secret-link.txt", offset: 0, length: 10 }),
-    ).resolves.toEqual({ status: "error", error: "Access outside of the allowed folder is not allowed" });
+    ).resolves.toEqual({
+      status: "error",
+      error: "Access outside of the allowed folder is not allowed",
+    });
   });
 });
 
@@ -249,22 +304,28 @@ describe("path edge cases", () => {
       status: "ok",
       directory: { path: "~", entries: [{ name: "inside.txt", path: "~/inside.txt" }] },
     });
-    await expect(handlers.readFile({ root: allowed, path: "~/inside.txt" })).resolves.toMatchObject({
-      status: "ok",
-      file: { content: "tilde\n" },
-    });
+    await expect(handlers.readFile({ root: allowed, path: "~/inside.txt" })).resolves.toMatchObject(
+      {
+        status: "ok",
+        file: { content: "tilde\n" },
+      },
+    );
   });
 
-  it.skipIf(process.platform === "win32")("refuses a FIFO without blocking", async () => {
-    execFileSync("mkfifo", [path.join(allowed, "pipe")]);
-    const handlers = handlersFor([{ path: allowed }]);
+  it.skipIf(process.platform === "win32")(
+    "refuses a FIFO without blocking",
+    async () => {
+      execFileSync("mkfifo", [path.join(allowed, "pipe")]);
+      const handlers = handlersFor([{ path: allowed }]);
 
-    await expect(handlers.readFile({ root: allowed, path: "pipe" })).resolves.toEqual({
-      status: "error",
-      error: "Requested path is not a file",
-    });
-    await expect(
-      handlers.readFileChunk({ root: allowed, path: "pipe", offset: 0, length: 10 }),
-    ).resolves.toEqual({ status: "error", error: "Requested path is not a file" });
-  }, 2000);
+      await expect(handlers.readFile({ root: allowed, path: "pipe" })).resolves.toEqual({
+        status: "error",
+        error: "Requested path is not a file",
+      });
+      await expect(
+        handlers.readFileChunk({ root: allowed, path: "pipe", offset: 0, length: 10 }),
+      ).resolves.toEqual({ status: "error", error: "Requested path is not a file" });
+    },
+    2000,
+  );
 });

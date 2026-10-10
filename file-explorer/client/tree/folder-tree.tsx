@@ -1,5 +1,5 @@
 import type { PluginHostProps } from "@getpaseo/plugin/client";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 import type { FileRef } from "../tabs/panel-id";
 import { ExplorerTree, PillButton } from "./explorer-tree";
@@ -32,6 +32,12 @@ export function FolderTree({
   const styles = useMemo(() => createTreeStyles(theme, layout.compact), [theme, layout.compact]);
   const folders = useAllowedFolders();
   const pickedRoot = useTreeView((state) => placementState(state, placement).root);
+  const { refetch } = folders;
+  const retry = useCallback(() => void refetch(), [refetch]);
+  const selectRoot = useCallback(
+    (root: string) => treeViewStore.dispatch({ type: "select-root", placement, root }),
+    [placement],
+  );
 
   if (folders.isPending) {
     return (
@@ -45,7 +51,7 @@ export function FolderTree({
     return (
       <View style={[styles.container, styles.centerState]}>
         <Text style={styles.errorText}>{folders.error.message}</Text>
-        <PillButton label="Retry" styles={styles} onPress={() => void folders.refetch()} />
+        <PillButton label="Retry" styles={styles} onPress={retry} />
       </View>
     );
   }
@@ -67,7 +73,7 @@ export function FolderTree({
         folders={folders.data}
         active={active}
         theme={theme}
-        onSelect={(root) => treeViewStore.dispatch({ type: "select-root", placement, root })}
+        onSelect={selectRoot}
         onManage={onOpenSettings}
       />
       {status ? (
@@ -76,7 +82,7 @@ export function FolderTree({
           <Text selectable style={styles.mutedText}>
             {active.root}
           </Text>
-          <PillButton label="Retry" styles={styles} onPress={() => void folders.refetch()} />
+          <PillButton label="Retry" styles={styles} onPress={retry} />
         </View>
       ) : (
         <ExplorerTree

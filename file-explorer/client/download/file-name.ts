@@ -12,8 +12,7 @@ const MAX_NAME_LENGTH = 120;
  * because iOS picks the share sheet's file type from it.
  */
 export function sanitizeFileName(fileName: string): string {
-  const cleaned = fileName
-    .replace(/[\u0000-\u001f\u007f]+/g, "")
+  const cleaned = stripControlCharacters(fileName)
     .replace(/[\\/:*?"<>|]+/g, "_")
     .trim();
   if (cleaned === "" || /^\.+$/.test(cleaned)) {
@@ -24,6 +23,16 @@ export function sanitizeFileName(fileName: string): string {
   }
   const extension = extensionOf(cleaned);
   return cleaned.slice(0, MAX_NAME_LENGTH - extension.length) + extension;
+}
+
+/** Drops C0 control characters (U+0000 to U+001F) and DEL (U+007F). */
+function stripControlCharacters(value: string): string {
+  let result = "";
+  for (const char of value) {
+    const code = char.charCodeAt(0);
+    if (code > 0x1f && code !== 0x7f) result += char;
+  }
+  return result;
 }
 
 function extensionOf(fileName: string): string {

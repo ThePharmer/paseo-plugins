@@ -104,9 +104,9 @@ function createHarness(options: HarnessOptions = {}) {
       now: () => new Date(Date.UTC(2026, 9, 1, 0, 0, clock++)).toISOString(),
     },
     panels: {
-      filePanel: (file, panelId) => ({
+      filePanel: (ref, panelId) => ({
         id: panelId,
-        title: file.path.split("/").pop() ?? file.path,
+        title: ref.path.split("/").pop() ?? ref.path,
         icon: "File",
         context: "workspace",
         locations: ["workspace"],

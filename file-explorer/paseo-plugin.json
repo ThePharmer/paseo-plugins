@@ -5,13 +5,5 @@
   "requirements": {
     "paseo": ">=0.11.1"
   },
-  "build": [
-    [
-      "npm",
-      "ci",
-      "--omit=dev",
-      "--no-audit",
-      "--no-fund"
-    ]
-  ]
+  "build": [["npm", "ci", "--omit=dev", "--no-audit", "--no-fund"]]
 }

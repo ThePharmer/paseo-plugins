@@ -45,25 +45,28 @@ export function useSaveAction(input: {
       setProgress({ status: "idle" });
     }
 
-    void saveFile({
-      root,
-      path,
-      readChunk,
-      platform,
-      onProgress(received, total) {
-        // The control frees up once every byte is here. iOS's share sheet never settles its
-        // promise when the user opens a share target and backs out, so waiting for the result
-        // could leave the control stuck.
-        if (received >= total) {
-          finishTransfer();
-          return;
-        }
-        setProgress({ status: "transferring", percent: Math.floor((received / total) * 100) });
-      },
-    }).then((result) => {
+    async function transfer() {
+      const result = await saveFile({
+        root,
+        path,
+        readChunk,
+        platform,
+        onProgress(received, total) {
+          // The control frees up once every byte is here. iOS's share sheet never settles its
+          // promise when the user opens a share target and backs out, so waiting for the result
+          // could leave the control stuck.
+          if (received >= total) {
+            finishTransfer();
+            return;
+          }
+          setProgress({ status: "transferring", percent: Math.floor((received / total) * 100) });
+        },
+      });
       finishTransfer();
       reportResult({ result, fileName, label, toast });
-    });
+    }
+
+    void transfer();
   }, [fileName, label, path, platform, readChunk, root, toast]);
 
   if (!available) return null;

@@ -1,0 +1,129 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  # Every base branch: PRs are stacked onto feature branches.
+  pull_request:
+  merge_group:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  format:
+    name: format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: node scripts/npm-retry.mjs ci
+
+      - name: Check formatting
+        run: npm run format:check
+
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: "**/package-lock.json"
+
+      - name: Install dependencies
+        run: node scripts/npm-retry.mjs ci
+
+      - name: Install plugin dependencies
+        run: npm run install:plugins
+
+      - name: Lint lockfiles
+        run: |
+          set -euo pipefail
+          mapfile -t lockfiles < <(git ls-files -- 'package-lock.json' '**/package-lock.json')
+          for lockfile in "${lockfiles[@]}"; do
+            echo "Linting $lockfile"
+            npx --yes lockfile-lint --path "$lockfile" --type npm --allowed-hosts npm --validate-https --validate-integrity
+          done
+
+      - name: Verify dependency signatures
+        run: |
+          set -euo pipefail
+          npm audit signatures
+          for plugin in $(node scripts/plugins.mjs list); do
+            echo "Verifying $plugin"
+            (cd "$plugin" && npm audit signatures)
+          done
+
+      - name: Validate CI scripts
+        run: npm run test:scripts
+
+      - name: Lint
+        run: npm run lint
+
+  typecheck:
+    name: typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: "**/package-lock.json"
+
+      - name: Install plugin dependencies
+        run: npm run install:plugins
+
+      - name: Typecheck all plugins
+        run: npm run typecheck
+
+      # Ubuntu only: the PNGs come from sharp's prebuilt libvips, and byte-identical output is
+      # only verified on linux-x64.
+      - name: Verify generated icons
+        run: |
+          npm run generate:icons --prefix file-explorer
+          git diff --exit-code -- file-explorer/client/file-icons.generated.ts
+
+  plugin-tests-ubuntu:
+    name: plugin-tests (ubuntu-latest)
+    runs-on: ubuntu-latest
+    steps: &plugin_test_steps
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: "**/package-lock.json"
+
+      - name: Install plugin dependencies
+        run: npm run install:plugins
+
+      - name: Run plugin tests
+        run: npm run test
+
+  plugin-tests-windows:
+    name: plugin-tests (windows-latest)
+    runs-on: windows-latest
+    steps: *plugin_test_steps
+
+  plugin-tests-macos:
+    name: plugin-tests (macos-latest)
+    runs-on: macos-latest
+    steps: *plugin_test_steps

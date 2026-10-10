@@ -201,6 +201,8 @@ function TreeToolbar({
   onRefresh,
 }: TreeToolbarProps) {
   const [sortHovered, setSortHovered] = useState(false);
+  const handleSortHoverIn = useCallback(() => setSortHovered(true), []);
+  const handleSortHoverOut = useCallback(() => setSortHovered(false), []);
   const iconSize = toolbarIconSize(compact);
   const iconColor = theme.colors.foregroundMuted;
   return (
@@ -208,9 +210,9 @@ function TreeToolbar({
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={`Sort by ${sortLabel}`}
-        onPress={() => treeViewStore.dispatch({ type: "cycle-sort" })}
-        onHoverIn={() => setSortHovered(true)}
-        onHoverOut={() => setSortHovered(false)}
+        onPress={cycleSort}
+        onHoverIn={handleSortHoverIn}
+        onHoverOut={handleSortHoverOut}
         style={sortHovered ? [styles.sortTrigger, styles.sortTriggerActive] : styles.sortTrigger}
       >
         <Text style={styles.sortTriggerText}>{sortLabel}</Text>
@@ -221,7 +223,7 @@ function TreeToolbar({
           label={showHiddenFiles ? "Hide hidden files" : "Show hidden files"}
           selected={!showHiddenFiles}
           styles={styles}
-          onPress={() => treeViewStore.dispatch({ type: "toggle-hidden-files" })}
+          onPress={toggleHiddenFiles}
         >
           <Icon name={showHiddenFiles ? "Eye" : "EyeOff"} size={iconSize} color={iconColor} />
         </ToolbarButton>
@@ -243,6 +245,14 @@ function TreeToolbar({
   );
 }
 
+function cycleSort() {
+  treeViewStore.dispatch({ type: "cycle-sort" });
+}
+
+function toggleHiddenFiles() {
+  treeViewStore.dispatch({ type: "toggle-hidden-files" });
+}
+
 interface ToolbarButtonProps {
   label: string;
   selected: boolean;
@@ -262,16 +272,22 @@ function ToolbarButton({
 }: ToolbarButtonProps) {
   const [hovered, setHovered] = useState(false);
   const active = hovered || selected;
+  const accessibilityState = useMemo(
+    () => ({ selected, disabled: Boolean(disabled) }),
+    [selected, disabled],
+  );
+  const handleHoverIn = useCallback(() => setHovered(true), []);
+  const handleHoverOut = useCallback(() => setHovered(false), []);
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={label}
-      accessibilityState={{ selected, disabled: Boolean(disabled) }}
+      accessibilityState={accessibilityState}
       disabled={disabled}
       hitSlop={8}
       onPress={onPress}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
+      onHoverIn={handleHoverIn}
+      onHoverOut={handleHoverOut}
       style={active ? [styles.toolbarButton, styles.toolbarButtonActive] : styles.toolbarButton}
     >
       {children}

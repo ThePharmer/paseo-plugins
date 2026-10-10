@@ -57,10 +57,10 @@ function fakeExpoSqlite(options: FakeOptions = {}) {
     rows: Map<string, string>;
     constructor(
       readonly path: string,
-      readonly options: unknown,
+      readonly openOptions: unknown,
     ) {
       fail("open");
-      log.push(`open ${path} ${JSON.stringify(options)}`);
+      log.push(`open ${path} ${JSON.stringify(openOptions)}`);
       openCount += 1;
       this.rows = databases.get(path) ?? new Map();
       databases.set(path, this.rows);
@@ -170,8 +170,12 @@ describe("createExpoSqliteTextStore", () => {
     expect(() => bareDatabase?.read("k")).toThrow("not supported");
     expect(closed).toBe(1);
 
+    // A statement that carries its source but none of the native methods.
+    class BareStatement {
+      source = "";
+    }
     const bareStatement = createExpoSqliteTextStore({
-      ExpoSQLite: { ...modules.ExpoSQLite, NativeStatement: class {} },
+      ExpoSQLite: { ...modules.ExpoSQLite, NativeStatement: BareStatement },
     });
     expect(() => bareStatement?.read("k")).toThrow("not supported");
   });

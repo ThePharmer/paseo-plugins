@@ -2,8 +2,8 @@
 
 Paseo plugins by ThePharmer.
 
-| Plugin | What it does |
-| --- | --- |
+| Plugin                          | What it does                                                                     |
+| ------------------------------- | -------------------------------------------------------------------------------- |
 | [file-explorer](file-explorer/) | Browse folders you allow in the plugin's settings, outside the current workspace |
 
 Install one from Git:

@@ -1,6 +1,12 @@
 import { Icon } from "@getpaseo/plugin/client/react-native";
-import { useState, type ReactNode } from "react";
-import { ActivityIndicator, Pressable, Text, View } from "react-native";
+import { useCallback, useMemo, useState, type ReactNode } from "react";
+import {
+  ActivityIndicator,
+  Pressable,
+  Text,
+  View,
+  type PressableStateCallbackType,
+} from "react-native";
 import { iconGlyphSize, type ViewerStyles, type ViewerTheme } from "./styles";
 
 // The plugin runtime has no host Button or ToolbarButton, so these follow their look: an
@@ -30,21 +36,28 @@ export function IconButton({
   const [hovered, setHovered] = useState(false);
   const isDisabled = disabled || busy;
   const glyphSize = iconGlyphSize(compact);
+  const accessibilityState = useMemo(() => ({ disabled: isDisabled, busy }), [isDisabled, busy]);
+  const handleHoverIn = useCallback(() => setHovered(true), []);
+  const handleHoverOut = useCallback(() => setHovered(false), []);
+  const pressableStyle = useCallback(
+    ({ pressed }: PressableStateCallbackType) => [
+      styles.iconButton,
+      (hovered || pressed) && !isDisabled ? styles.iconButtonHighlighted : null,
+      disabled ? styles.disabled : null,
+    ],
+    [disabled, hovered, isDisabled, styles],
+  );
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={label}
-      accessibilityState={{ disabled: isDisabled, busy }}
+      accessibilityState={accessibilityState}
       disabled={isDisabled}
       onPress={onPress}
-      onHoverIn={() => setHovered(true)}
-      onHoverOut={() => setHovered(false)}
+      onHoverIn={handleHoverIn}
+      onHoverOut={handleHoverOut}
       hitSlop={compact ? undefined : 6}
-      style={({ pressed }) => [
-        styles.iconButton,
-        (hovered || pressed) && !isDisabled ? styles.iconButtonHighlighted : null,
-        disabled ? styles.disabled : null,
-      ]}
+      style={pressableStyle}
     >
       {busy ? (
         <ActivityIndicator size="small" color={theme.colors.foregroundMuted} />
@@ -69,6 +82,14 @@ export interface TextButtonProps {
 }
 
 export function TextButton({ label, onPress, icon, busy = false, theme, styles }: TextButtonProps) {
+  const accessibilityState = useMemo(() => ({ disabled: busy, busy }), [busy]);
+  const pressableStyle = useCallback(
+    ({ pressed }: PressableStateCallbackType) => [
+      styles.textButton,
+      pressed ? styles.iconButtonHighlighted : null,
+    ],
+    [styles],
+  );
   let leading: ReactNode = null;
   if (busy) {
     leading = <ActivityIndicator size="small" color={theme.colors.foregroundMuted} />;
@@ -78,10 +99,10 @@ export function TextButton({ label, onPress, icon, busy = false, theme, styles }
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityState={{ disabled: busy, busy }}
+      accessibilityState={accessibilityState}
       disabled={busy}
       onPress={onPress}
-      style={({ pressed }) => [styles.textButton, pressed ? styles.iconButtonHighlighted : null]}
+      style={pressableStyle}
     >
       {leading ? <View>{leading}</View> : null}
       <Text style={styles.textButtonLabel}>{label}</Text>

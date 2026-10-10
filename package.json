@@ -1,0 +1,28 @@
+{
+  "name": "paseo-plugins",
+  "private": true,
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "install:plugins": "node scripts/plugins.mjs ci",
+    "typecheck": "node scripts/plugins.mjs run typecheck",
+    "test": "node scripts/plugins.mjs run test",
+    "test:scripts": "node --test scripts/*.test.mjs",
+    "generate:icons": "npm run generate:icons --prefix file-explorer",
+    "drift": "node scripts/check-upstream-drift.mjs --dry-run",
+    "format": "oxfmt .",
+    "format:files": "oxfmt",
+    "format:check": "oxfmt --check .",
+    "format:check:files": "oxfmt --check",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix"
+  },
+  "devDependencies": {
+    "lockfile-lint": "5.1.0",
+    "oxfmt": "0.46.0",
+    "oxlint": "1.61.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

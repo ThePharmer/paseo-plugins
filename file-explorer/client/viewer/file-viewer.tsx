@@ -45,12 +45,10 @@ export function FileViewer({ root, path, theme, layout }: FileViewerProps) {
     // The error state has its own Retry; silent retries only delay it.
     retry: false,
   });
-  // Hosts may hand over a new theme object for the same colors. Keying on the color values (which
-  // is all of `theme`) keeps the source list's rows from re-rendering when nothing changed.
-  const themeKey = Object.values(theme.colors).join("|");
+  const stableTheme = useStableTheme(theme);
   const styles = useMemo(
-    () => createViewerStyles(theme, layout.compact),
-    [themeKey, layout.compact],
+    () => createViewerStyles(stableTheme, layout.compact),
+    [stableTheme, layout.compact],
   );
   const fileName = fileNameOf(path);
   const absolutePath = absolutePathOf(root, path);
@@ -71,13 +69,16 @@ export function FileViewer({ root, path, theme, layout }: FileViewerProps) {
     void refetch();
   }, [refetch]);
 
-  const copyPath = useCallback(async () => {
-    try {
-      await copyText(absolutePath);
-      toast.show("Path copied", { variant: "success" });
-    } catch {
-      toast.error("Could not copy. Select the path and use Copy.");
+  const copyPath = useCallback(() => {
+    async function copy() {
+      try {
+        await copyText(absolutePath);
+        toast.show("Path copied", { variant: "success" });
+      } catch {
+        toast.error("Could not copy. Select the path and use Copy.");
+      }
     }
+    void copy();
   }, [absolutePath, toast]);
 
   return (
@@ -89,10 +90,10 @@ export function FileViewer({ root, path, theme, layout }: FileViewerProps) {
         lineCount={lineCount}
         refreshing={query.isFetching}
         onRefresh={refresh}
-        onCopyPath={() => void copyPath()}
+        onCopyPath={copyPath}
         save={save}
         compact={layout.compact}
-        theme={theme}
+        theme={stableTheme}
         styles={styles}
       />
       <ViewerBody
@@ -101,10 +102,60 @@ export function FileViewer({ root, path, theme, layout }: FileViewerProps) {
         save={save}
         onRetry={refresh}
         retrying={query.isFetching}
-        theme={theme}
+        theme={stableTheme}
         styles={styles}
       />
     </View>
+  );
+}
+
+/**
+ * The same theme object for as long as its colors stay the same. Hosts may hand over a new theme
+ * object for unchanged colors; a stable one keeps the source list's rows from re-rendering.
+ */
+function useStableTheme(theme: ViewerTheme): ViewerTheme {
+  const {
+    surface0,
+    surface1,
+    surface2,
+    border,
+    foreground,
+    foregroundMuted,
+    accent,
+    accentForeground,
+    statusSuccess,
+    statusWarning,
+    statusDanger,
+  } = theme.colors;
+  return useMemo(
+    () => ({
+      colors: {
+        surface0,
+        surface1,
+        surface2,
+        border,
+        foreground,
+        foregroundMuted,
+        accent,
+        accentForeground,
+        statusSuccess,
+        statusWarning,
+        statusDanger,
+      },
+    }),
+    [
+      surface0,
+      surface1,
+      surface2,
+      border,
+      foreground,
+      foregroundMuted,
+      accent,
+      accentForeground,
+      statusSuccess,
+      statusWarning,
+      statusDanger,
+    ],
   );
 }
 
@@ -196,6 +247,7 @@ function ImageBody({
 }) {
   // Keyed by URI so a refreshed or different image gets a fresh attempt.
   const [failedUri, setFailedUri] = useState<string | null>(null);
+  const handleError = useCallback(() => setFailedUri(uri), [uri]);
   if (failedUri === uri) {
     return (
       <UnviewableState
@@ -208,5 +260,5 @@ function ImageBody({
       />
     );
   }
-  return <ImageView uri={uri} onError={() => setFailedUri(uri)} styles={styles} />;
+  return <ImageView uri={uri} onError={handleError} styles={styles} />;
 }

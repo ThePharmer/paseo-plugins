@@ -3,7 +3,7 @@
 // Mohamed Boudra).
 // Modified: plain React Native styles from PluginTheme instead of Unistyles, the SDK FlatList,
 // no line-target scrolling, row height and getItemLayout share one value, and token keys are
-// positional so repeated tokens on a line do not collide.
+// character offsets so repeated tokens on a line do not collide.
 
 import { highlightCode, type HighlightToken } from "@getpaseo/highlight";
 import { FlatList } from "@getpaseo/plugin/client/react-native";
@@ -21,9 +21,14 @@ export interface SourceViewProps {
   styles: ViewerStyles;
 }
 
+interface SourceToken extends HighlightToken {
+  /** Character offset within the line. Unique per line, since only an empty line has an empty token. */
+  start: number;
+}
+
 interface SourceLine {
   number: number;
-  tokens: HighlightToken[];
+  tokens: SourceToken[];
 }
 
 export function SourceView({ content, fileName, presentation, theme, styles }: SourceViewProps) {
@@ -60,12 +65,21 @@ function sourceLines(input: {
   if (input.presentation === "highlighted") {
     return highlightCode(input.content, input.fileName).map((tokens, index) => ({
       number: index + 1,
-      tokens,
+      tokens: withOffsets(tokens),
     }));
   }
   return input.content
     .split("\n")
-    .map((text, index) => ({ number: index + 1, tokens: [{ text, style: null }] }));
+    .map((text, index) => ({ number: index + 1, tokens: [{ text, style: null, start: 0 }] }));
+}
+
+function withOffsets(tokens: readonly HighlightToken[]): SourceToken[] {
+  let start = 0;
+  return tokens.map((token) => {
+    const keyed = { ...token, start };
+    start += token.text.length;
+    return keyed;
+  });
 }
 
 const SourceLineView = memo(function SourceLineView({
@@ -81,9 +95,8 @@ const SourceLineView = memo(function SourceLineView({
     <View style={styles.sourceLine}>
       <Text style={styles.gutter}>{line.number}</Text>
       <Text selectable style={styles.sourceText}>
-        {line.tokens.map((token, index) => (
-          // Tokens never reorder within a line, so their position is a stable key.
-          <Text key={index} style={tokenStyleFor(tokenStyles, token.style)}>
+        {line.tokens.map((token) => (
+          <Text key={token.start} style={tokenStyleFor(tokenStyles, token.style)}>
             {token.text}
           </Text>
         ))}

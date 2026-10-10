@@ -1,0 +1,32 @@
+name: Upstream Drift
+
+on:
+  schedule:
+    - cron: "17 7 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: upstream-drift
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  drift:
+    name: drift
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      # Compares every file with a "Copied from getpaseo/paseo@<commit>" header against the latest
+      # upstream release, then opens, updates, or closes the single upstream-drift issue.
+      - name: Check upstream drift
+        run: node scripts/check-upstream-drift.mjs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

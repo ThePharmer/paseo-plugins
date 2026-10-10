@@ -54,7 +54,9 @@ export function createExplorerHandlers(settings: ExplorerSettings): ExplorerHand
   // The only way a client names a folder is by the expanded root returned from listFolders.
   // Anything else is refused before it reaches the filesystem.
   async function requireAllowedRoot(root: string): Promise<string> {
-    const allowed = new Set((await configuredFolders()).map((folder) => expandUserPath(folder.path)));
+    const allowed = new Set(
+      (await configuredFolders()).map((folder) => expandUserPath(folder.path)),
+    );
     if (!allowed.has(root)) {
       throw new FolderNotAllowedError(root);
     }

@@ -74,7 +74,7 @@ export function sqliteDatabasePath(directory: string): string {
   return `${directory.replace(/\/+$/, "")}/${SQLITE_DATABASE_NAME}`;
 }
 
-function withDatabase<T>(sqlite: ExpoSQLiteModule, use: (database: NativeDatabase) => T): T {
+function withDatabase<T>(sqlite: ExpoSQLiteModule, run: (database: NativeDatabase) => T): T {
   const path = sqliteDatabasePath(sqlite.defaultDatabaseDirectory);
   sqlite.ensureDatabasePathExistsSync(path);
   const database = new sqlite.NativeDatabase(path, {});
@@ -85,7 +85,7 @@ function withDatabase<T>(sqlite: ExpoSQLiteModule, use: (database: NativeDatabas
   try {
     database.initSync();
     database.execSync(CREATE_TABLE);
-    return use(database);
+    return run(database);
   } finally {
     try {
       database.closeSync();

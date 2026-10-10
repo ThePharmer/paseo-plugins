@@ -152,7 +152,7 @@ export function createFileTabs({ host, panels, fallback }: CreateFileTabsInput):
   function persist(file: OpenFile): Promise<void> {
     const key = fileKey(file);
     pending.set(key, (pending.get(key) ?? 0) + 1);
-    const run = queue.then(async () => {
+    async function save(): Promise<void> {
       try {
         const saved = await persistOpenFile(host.storage, file);
         if (!disposed) {
@@ -166,7 +166,8 @@ export function createFileTabs({ host, panels, fallback }: CreateFileTabsInput):
         if (count === 0) pending.delete(key);
         else pending.set(key, count);
       }
-    });
+    }
+    const run = queue.then(save);
     queue = run.catch(() => undefined);
     return run;
   }
@@ -231,7 +232,7 @@ export function createFileTabs({ host, panels, fallback }: CreateFileTabsInput):
 
     dispose() {
       disposed = true;
-      for (const key of [...registered.keys()]) unregister(key);
+      for (const key of registered.keys()) unregister(key);
       removeFallback?.();
       removeFallback = null;
     },
