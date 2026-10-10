@@ -1,0 +1,29 @@
+{
+  "name": "paseo-plugins-e2e",
+  "version": "0.0.0",
+  "private": true,
+  "description": "End-to-end tests for the plugins in this repo against a real, isolated Paseo daemon",
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "install:paseo": "node scripts/install-paseo.mjs",
+    "test": "playwright test",
+    "test:rpc": "playwright test --project=rpc",
+    "test:web": "playwright test --project=web",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@getpaseo/cli": "0.11.1",
+    "@getpaseo/client": "0.11.1",
+    "@getpaseo/plugin": "0.11.1",
+    "@playwright/test": "1.60.0",
+    "@types/node": "22.20.5",
+    "@types/ws": "8.18.2",
+    "typescript": "5.9.3",
+    "ws": "8.22.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

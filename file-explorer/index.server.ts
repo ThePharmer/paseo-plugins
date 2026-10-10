@@ -1,8 +1,16 @@
 import type { PluginServerContext } from "@getpaseo/plugin/server";
-import { createGreeting } from "./server/greeting";
-import { greetingRpc } from "./shared/greeting";
+import { createExplorerHandlers } from "./server/handlers";
+import { listDirectoryRpc, listFoldersRpc, readFileChunkRpc, readFileRpc } from "./shared/rpc";
+import { openFilesSettings } from "./shared/open-files";
+import { explorerSettings } from "./shared/settings";
 
 export default function contribute(server: PluginServerContext) {
-  server.handle(greetingRpc, createGreeting);
+  const settings = server.registerSettings(explorerSettings);
+  server.registerSettings(openFilesSettings);
+  const handlers = createExplorerHandlers(settings);
+  server.handle(listFoldersRpc, handlers.listFolders);
+  server.handle(listDirectoryRpc, handlers.listDirectory);
+  server.handle(readFileRpc, handlers.readFile);
+  server.handle(readFileChunkRpc, handlers.readFileChunk);
   return () => {};
 }
