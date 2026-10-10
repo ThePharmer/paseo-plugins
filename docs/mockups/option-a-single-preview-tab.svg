@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="870" viewBox="0 0 1280 870">
+<rect x="0" y="0" width="1280" height="870" rx="0" fill="#0f1110"/>
+<text x="28" y="40" fill="#E6E8E7" font-size="22" font-weight="600" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" text-anchor="start">Option A: single preview tab</text>
+<text x="28" y="70" fill="#A1A5A4" font-size="14" font-weight="400" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" text-anchor="start">Tapping a file in the tree shows it in one File tab. Tapping another file replaces it. The tab title stays "File" (plugin tab titles are fixed).</text>
+<g transform="translate(0,100)">
+<rect x="0" y="0" width="1280" height="760" rx="10" fill="#181B1A" stroke="#2F3534" stroke-width="1"/>
+<rect x="0" y="0" width="220" height="760" rx="0" fill="#141716"/>
+<line x1="220" y1="0" x2="220" y2="760" stroke="#252B2A" stroke-width="1"/>
+<text x="20" y="34" fill="#E6E8E7" font-size="16" font-weight="600" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" text-anchor="start">Paseo</text>
+<text x="20" y="78" fill="#A1A5A4" font-size="14" font-weight="400" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" text-anchor="start">New workspace</text>
+<text x="20" y="108" fill="#A1A5A4" font-size="14" font-weight="400" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" text-anchor="start">Search</text>
+<text x="20" y="138" fill="#A1A5A4" font-size="14" font-weight="400" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" text-anchor="start">Schedules</text>
+<text x="20" y="168" fill="#A1A5A4" font-size="14" font-weight="400" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" text-anchor="start">Allowed folders</text>
+<rect x="150" y="155" width="52" height="18" rx="9" fill="none" stroke="#7ccba0" stroke-width="1"/><text x="176" y="168" fill="#7ccba0" font-size="11" font-weight="500" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" text-anchor="middle">plugin</text>
+<text x="20" y="216" fill="#717574" font-size="11" font-weight="600" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" text-anchor="start">WORKSPACES</text>
+<rect x="10" y="226" width="200" height="30" rx="6" fill="#434645"/>
+<text x="20" y="246" fill="#E6E8E7" font-size="14" font-weight="500" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" text-anchor="start">paseo</text>
+<text x="20" y="280" fill="#A1A5A4" font-size="14" font-weight="400" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" text-anchor="start">paseo-plugins</text>
+<text x="20" y="314" fill="#A1A5A4" font-size="14" font-weight="400" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" text-anchor="start">homelab</text>
+<rect x="220" y="0" width="1060" height="44" rx="0" fill="#181B1A"/>
+<text x="240" y="28" fill="#E6E8E7" font-size="14" font-weight="600" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" text-anchor="start">paseo</text>
+<text x="296" y="28" fill="#717574" font-size="13" font-weight="400" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" text-anchor="start">main</text>
+<line x1="220" y1="44" x2="1280" y2="44" stroke="#252B2A" stroke-width="1"/>
+<rect x="220" y="44" width="680" height="36" rx="0" fill="#1E2120"/>
+<text x="234" y="67" fill="#A1A5A4" font-size="13" font-weight="400" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" text-anchor="start">Agent</text>
+<text x="290" y="67" fill="#717574" font-size="15" font-weight="400" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" text-anchor="start">×</text>
+<text x="322" y="67" fill="#A1A5A4" font-size="13" font-weight="400" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" text-anchor="start">Terminal</text>
+<text x="402" y="67" fill="#717574" font-size="15" font-weight="400" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" text-anchor="start">×</text>
+<rect x="420" y="44" width="80" height="36" rx="0" fill="#181B1A"/>
+<rect x="420" y="78" width="80" height="2" rx="0" fill="#7ccba0"/>
+<text x="434" y="67" fill="#E6E8E7" font-size="13" font-weight="500" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" text-anchor="start">File</text>
+<text x="482" y="67" fill="#717574" font-size="15" font-weight="400" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" text-anchor="start">×</text>
+<line x1="220" y1="80" x2="900" y2="80" stroke="#252B2A" stroke-width="1"/>
+<rect x="220" y="80" width="680" height="680" rx="0" fill="#181B1A"/>
+<text x="240" y="108" fill="#E6E8E7" font-size="13" font-weight="600" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" text-anchor="start">notes.md</text>
+<text x="316" y="108" fill="#717574" font-size="12" font-weight="400" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" text-anchor="start">~/Documents/notes.md</text>
+<line x1="220" y1="124" x2="900" y2="124" stroke="#252B2A" stroke-width="1"/>
+<text x="264" y="156" fill="#717574" font-size="13" font-weight="400" font-family="JetBrains Mono, SF Mono, Menlo, Consolas, monospace" text-anchor="end">1</text>
+<text x="280" y="156" fill="#82aaff" font-size="13" font-weight="600" font-family="JetBrains Mono, SF Mono, Menlo, Consolas, monospace" text-anchor="start"># Weekly notes</text>
+<text x="264" y="180" fill="#717574" font-size="13" font-weight="400" font-family="JetBrains Mono, SF Mono, Menlo, Consolas, monospace" text-anchor="end">2</text>
+<text x="280" y="180" fill="#E6E8E7" font-size="13" font-weight="400" font-family="JetBrains Mono, SF Mono, Menlo, Consolas, monospace" text-anchor="start"></text>
+<text x="264" y="204" fill="#717574" font-size="13" font-weight="400" font-family="JetBrains Mono, SF Mono, Menlo, Consolas, monospace" text-anchor="end">3</text>
+<text x="280" y="204" fill="#c792ea" font-size="13" font-weight="400" font-family="JetBrains Mono, SF Mono, Menlo, Consolas, monospace" text-anchor="start">-</text>
+<text x="296" y="204" fill="#E6E8E7" font-size="13" font-weight="400" font-family="JetBrains Mono, SF Mono, Menlo, Consolas, monospace" text-anchor="start">Ship the file explorer plugin</text>
+<text x="264" y="228" fill="#717574" font-size="13" font-weight="400" font-family="JetBrains Mono, SF Mono, Menlo, Consolas, monospace" text-anchor="end">4</text>
+<text x="280" y="228" fill="#c792ea" font-size="13" font-weight="400" font-family="JetBrains Mono, SF Mono, Menlo, Consolas, monospace" text-anchor="start">-</text>
+<text x="296" y="228" fill="#E6E8E7" font-size="13" font-weight="400" font-family="JetBrains Mono, SF Mono, Menlo, Consolas, monospace" text-anchor="start">Review relay PR</text>
+<text x="264" y="252" fill="#717574" font-size="13" font-weight="400" font-family="JetBrains Mono, SF Mono, Menlo, Consolas, monospace" text-anchor="end">5</text>
+<text x="280" y="252" fill="#E6E8E7" font-size="13" font-weight="400" font-family="JetBrains Mono, SF Mono, Menlo, Consolas, monospace" text-anchor="start"></text>
+<text x="264" y="276" fill="#717574" font-size="13" font-weight="400" font-family="JetBrains Mono, SF Mono, Menlo, Consolas, monospace" text-anchor="end">6</text>
+<text x="280" y="276" fill="#82aaff" font-size="13" font-weight="600" font-family="JetBrains Mono, SF Mono, Menlo, Consolas, monospace" text-anchor="start">## Ideas</text>
+<text x="264" y="300" fill="#717574" font-size="13" font-weight="400" font-family="JetBrains Mono, SF Mono, Menlo, Consolas, monospace" text-anchor="end">7</text>
+<text x="280" y="300" fill="#c792ea" font-size="13" font-weight="400" font-family="JetBrains Mono, SF Mono, Menlo, Consolas, monospace" text-anchor="start">-</text>
+<text x="296" y="300" fill="#E6E8E7" font-size="13" font-weight="400" font-family="JetBrains Mono, SF Mono, Menlo, Consolas, monospace" text-anchor="start">Allowed folders in settings</text>
+<text x="264" y="324" fill="#717574" font-size="13" font-weight="400" font-family="JetBrains Mono, SF Mono, Menlo, Consolas, monospace" text-anchor="end">8</text>
+<text x="280" y="324" fill="#c792ea" font-size="13" font-weight="400" font-family="JetBrains Mono, SF Mono, Menlo, Consolas, monospace" text-anchor="start">-</text>
+<text x="296" y="324" fill="#E6E8E7" font-size="13" font-weight="400" font-family="JetBrains Mono, SF Mono, Menlo, Consolas, monospace" text-anchor="start">Long-press menu: copy path, share</text>
+<line x1="900" y1="44" x2="900" y2="760" stroke="#252B2A" stroke-width="1"/>
+<rect x="900" y="44" width="380" height="36" rx="0" fill="#1E2120"/>
+<rect x="900" y="44" width="148" height="36" rx="0" fill="#181B1A"/>
+<rect x="900" y="78" width="148" height="2" rx="0" fill="#7ccba0"/>
+<text x="914" y="67" fill="#E6E8E7" font-size="13" font-weight="500" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" text-anchor="start">Allowed folders</text>
+<text x="1062" y="67" fill="#A1A5A4" font-size="13" font-weight="400" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" text-anchor="start">Changes</text>
+<line x1="900" y1="80" x2="1280" y2="80" stroke="#252B2A" stroke-width="1"/>
+<rect x="900" y="80" width="380" height="680" rx="0" fill="#1E2120"/>
+<text x="916" y="110" fill="#717574" font-size="12" font-weight="400" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" text-anchor="start">Folder</text>
+<rect x="970" y="92" width="294" height="30" rx="6" fill="#272A29" stroke="#2F3534" stroke-width="1"/>
+<path d="M982 103 h6 l2 2 h8 v10 h-16 z" fill="none" stroke="#A1A5A4" stroke-width="1.5" stroke-linejoin="round"/>
+<text x="1006" y="112" fill="#E6E8E7" font-size="13" font-weight="500" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" text-anchor="start">Documents</text>
+<text x="1092" y="112" fill="#717574" font-size="12" font-weight="400" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" text-anchor="start">~/Documents</text>
+<path d="M1242 104 l5 5 l5 -5" fill="none" stroke="#A1A5A4" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M916 149 l5 5 l5 -5" fill="none" stroke="#A1A5A4" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M932 147 h6 l2 2 h8 v10 h-16 z" fill="none" stroke="#A1A5A4" stroke-width="1.5" stroke-linejoin="round"/>
+<text x="956" y="156" fill="#E6E8E7" font-size="13" font-weight="400" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" text-anchor="start">Documents</text>
+<path d="M936 176 l5 5 l-5 5" fill="none" stroke="#A1A5A4" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M950 177 h6 l2 2 h8 v10 h-16 z" fill="none" stroke="#A1A5A4" stroke-width="1.5" stroke-linejoin="round"/>
+<text x="974" y="186" fill="#E6E8E7" font-size="13" font-weight="400" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" text-anchor="start">archive</text>
+<path d="M936 206 l5 5 l-5 5" fill="none" stroke="#A1A5A4" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M950 207 h6 l2 2 h8 v10 h-16 z" fill="none" stroke="#A1A5A4" stroke-width="1.5" stroke-linejoin="round"/>
+<text x="974" y="216" fill="#E6E8E7" font-size="13" font-weight="400" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" text-anchor="start">receipts</text>
+<rect x="906" y="227" width="368" height="28" rx="5" fill="#434645"/>
+<path d="M952 235 h8 l4 4 v11 h-12 z" fill="#42a5f5" opacity="0.9"/>
+<text x="974" y="246" fill="#E6E8E7" font-size="13" font-weight="500" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" text-anchor="start">notes.md</text>
+<path d="M952 265 h8 l4 4 v11 h-12 z" fill="#66bb6a" opacity="0.9"/>
+<text x="974" y="276" fill="#E6E8E7" font-size="13" font-weight="400" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" text-anchor="start">budget.xlsx</text>
+<path d="M952 295 h8 l4 4 v11 h-12 z" fill="#90a4ae" opacity="0.9"/>
+<text x="974" y="306" fill="#E6E8E7" font-size="13" font-weight="400" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" text-anchor="start">todo.txt</text>
+<path d="M952 325 h8 l4 4 v11 h-12 z" fill="#ef5350" opacity="0.9"/>
+<text x="974" y="336" fill="#E6E8E7" font-size="13" font-weight="400" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" text-anchor="start">scan.pdf</text>
+<rect x="223" y="83" width="674" height="674" rx="6" fill="none" stroke="#7ccba0" stroke-width="1.5" stroke-dasharray="6 5" opacity="0.8"/>
+<rect x="772" y="726" width="118" height="22" rx="11" fill="#181B1A" stroke="#7ccba0" stroke-width="1"/>
+<text x="831" y="741" fill="#7ccba0" font-size="11" font-weight="500" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" text-anchor="middle">drawn by plugin</text>
+<rect x="903" y="83" width="374" height="674" rx="6" fill="none" stroke="#7ccba0" stroke-width="1.5" stroke-dasharray="6 5" opacity="0.8"/>
+<rect x="1152" y="726" width="118" height="22" rx="11" fill="#181B1A" stroke="#7ccba0" stroke-width="1"/>
+<text x="1211" y="741" fill="#7ccba0" font-size="11" font-weight="500" font-family="Inter, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" text-anchor="middle">drawn by plugin</text>
+</g>
+</svg>
