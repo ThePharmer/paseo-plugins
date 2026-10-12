@@ -77,18 +77,29 @@ export interface TextButtonProps {
   onPress(): void;
   icon?: string;
   busy?: boolean;
+  disabled?: boolean;
   theme: ViewerTheme;
   styles: ViewerStyles;
 }
 
-export function TextButton({ label, onPress, icon, busy = false, theme, styles }: TextButtonProps) {
-  const accessibilityState = useMemo(() => ({ disabled: busy, busy }), [busy]);
+export function TextButton({
+  label,
+  onPress,
+  icon,
+  busy = false,
+  disabled = false,
+  theme,
+  styles,
+}: TextButtonProps) {
+  const isDisabled = busy || disabled;
+  const accessibilityState = useMemo(() => ({ disabled: isDisabled, busy }), [isDisabled, busy]);
   const pressableStyle = useCallback(
     ({ pressed }: PressableStateCallbackType) => [
       styles.textButton,
       pressed ? styles.iconButtonHighlighted : null,
+      disabled ? styles.disabled : null,
     ],
-    [styles],
+    [disabled, styles],
   );
   let leading: ReactNode = null;
   if (busy) {
@@ -100,7 +111,7 @@ export function TextButton({ label, onPress, icon, busy = false, theme, styles }
     <Pressable
       accessibilityRole="button"
       accessibilityState={accessibilityState}
-      disabled={busy}
+      disabled={isDisabled}
       onPress={onPress}
       style={pressableStyle}
     >

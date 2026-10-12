@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isAcceptedFolderPath, validateFolderDraft } from "./folder-draft";
+import { isAcceptedFolderPath, relabelFolder, validateFolderDraft } from "./folder-draft";
 
 describe("isAcceptedFolderPath", () => {
   it.each(["/", "/home/me/notes", "~", "~/notes", "C:\\Users\\me", "d:/data"])(
@@ -52,5 +52,27 @@ describe("validateFolderDraft", () => {
     expect(validateFolderDraft({ path: "/", label: "", existing })).toMatchObject({
       status: "valid",
     });
+  });
+});
+
+describe("relabelFolder", () => {
+  const folders = [{ path: "/srv" }, { path: "~/notes", label: "Notes" }];
+
+  it("sets a trimmed label on the matching folder only", () => {
+    expect(relabelFolder(folders, "/srv", "  Projects ")).toEqual([
+      { path: "/srv", label: "Projects" },
+      { path: "~/notes", label: "Notes" },
+    ]);
+  });
+
+  it("drops the label when it is empty so the folder name shows again", () => {
+    expect(relabelFolder(folders, "~/notes", "   ")).toEqual([
+      { path: "/srv" },
+      { path: "~/notes" },
+    ]);
+  });
+
+  it("leaves the list unchanged when the folder is gone", () => {
+    expect(relabelFolder(folders, "/missing", "X")).toEqual(folders);
   });
 });
