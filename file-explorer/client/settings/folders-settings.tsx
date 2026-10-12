@@ -10,13 +10,15 @@ import {
 } from "@getpaseo/plugin/client/ui";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo, useRef, useState } from "react";
-import { Text } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import type { AllowedFolder } from "../../shared/rpc";
 import { type AllowedFolderSetting, explorerSettings } from "../../shared/settings";
 import { FOLDER_STATUS_LABELS } from "../tree/folder-picker";
 import { explorerBasename } from "../tree/paths";
 import { explorerQueryKeys, useAllowedFolders } from "../tree/queries";
-import { validateFolderDraft } from "./folder-draft";
+import { TextButton } from "../viewer/controls";
+import { createViewerStyles, type ViewerStyles, type ViewerTheme } from "../viewer/styles";
+import { relabelFolder, validateFolderDraft } from "./folder-draft";
 import { matchFolderStatuses } from "./folder-status";
 
 export const FOLDERS_SETTINGS_ID = "folders";
@@ -59,11 +61,12 @@ export function FoldersSettings({ theme }: PluginSurfaceProps) {
       </SettingsSection>
     );
   }
-  return <FoldersEditor settings={settings} />;
+  return <FoldersEditor settings={settings} theme={theme} />;
 }
 
-function FoldersEditor({ settings }: { settings: ReadySettings }) {
+function FoldersEditor({ settings, theme }: { settings: ReadySettings; theme: ViewerTheme }) {
   const queryClient = useQueryClient();
+  const buttonStyles = useMemo(() => createViewerStyles(theme, false), [theme]);
   const folders = useAllowedFolders();
   const statuses = useMemo(
     () => matchFolderStatuses(settings.values.folders, folders.data ?? []),
@@ -87,6 +90,24 @@ function FoldersEditor({ settings }: { settings: ReadySettings }) {
     [saveFolders, settings.values.folders],
   );
 
+  // One folder is relabelled at a time. Its two rows are returned as an array, not a fragment,
+  // because SettingsCard draws dividers between the children it gets from Children.toArray.
+  const [editingPath, setEditingPath] = useState<string | null>(null);
+  const [draftLabel, setDraftLabel] = useState("");
+  const startEditing = useCallback((folder: AllowedFolderSetting) => {
+    setDraftLabel(folder.label ?? "");
+    setEditingPath(folder.path);
+  }, []);
+  const cancelEditing = useCallback(() => setEditingPath(null), []);
+  const saveLabel = useCallback(() => {
+    async function run() {
+      if (editingPath === null) return;
+      const next = relabelFolder(settings.values.folders, editingPath, draftLabel);
+      if (await saveFolders(next)) setEditingPath(null);
+    }
+    void run();
+  }, [draftLabel, editingPath, saveFolders, settings.values.folders]);
+
   return (
     <>
       <SettingsSection title="Allowed folders" info={ACCESS_NOTE}>
@@ -94,16 +115,56 @@ function FoldersEditor({ settings }: { settings: ReadySettings }) {
           {settings.values.folders.length === 0 ? (
             <SettingsRow label="No folders yet" hint="Add a folder below to browse it in Paseo" />
           ) : (
-            settings.values.folders.map((folder, index) => (
-              <FolderRow
-                key={folder.path}
-                folder={folder}
-                index={index}
-                hint={folderHint(folder, statuses[index], folders.isPending)}
-                disabled={settings.saving}
-                onRemove={remove}
-              />
-            ))
+            settings.values.folders.map((folder, index) =>
+              folder.path === editingPath ? (
+                [
+                  <SettingsInput
+                    key={`${folder.path}:label`}
+                    label="Label"
+                    hint={folder.path}
+                    initialValue={folder.label ?? ""}
+                    placeholder={folderName(folder)}
+                    disabled={settings.saving}
+                    onChangeText={setDraftLabel}
+                  />,
+                  <SettingsRow
+                    key={`${folder.path}:save`}
+                    label="Save label"
+                    hint="Leave it empty to show the folder name"
+                    error={settings.saveError}
+                  >
+                    <View style={rowStyles.buttons}>
+                      <TextButton
+                        label="Cancel"
+                        disabled={settings.saving}
+                        theme={theme}
+                        styles={buttonStyles}
+                        onPress={cancelEditing}
+                      />
+                      <TextButton
+                        label={settings.saving ? "Saving..." : "Save"}
+                        disabled={settings.saving}
+                        theme={theme}
+                        styles={buttonStyles}
+                        onPress={saveLabel}
+                      />
+                    </View>
+                  </SettingsRow>,
+                ]
+              ) : (
+                <FolderRow
+                  key={folder.path}
+                  folder={folder}
+                  index={index}
+                  hint={folderHint(folder, statuses[index], folders.isPending)}
+                  disabled={settings.saving}
+                  theme={theme}
+                  buttonStyles={buttonStyles}
+                  onEdit={startEditing}
+                  onRemove={remove}
+                />
+              ),
+            )
           )}
         </SettingsCard>
       </SettingsSection>
@@ -117,21 +178,55 @@ interface FolderRowProps {
   index: number;
   hint: string;
   disabled: boolean;
+  theme: ViewerTheme;
+  buttonStyles: ViewerStyles;
+  onEdit(folder: AllowedFolderSetting): void;
   onRemove(index: number): void;
 }
 
-function FolderRow({ folder, index, hint, disabled, onRemove }: FolderRowProps) {
+// The plugin UI kit's SettingsAction holds a single button, so Edit and Remove are drawn with the
+// viewer's outline buttons inside a plain row.
+function FolderRow({
+  folder,
+  index,
+  hint,
+  disabled,
+  theme,
+  buttonStyles,
+  onEdit,
+  onRemove,
+}: FolderRowProps) {
+  const handleEdit = useCallback(() => onEdit(folder), [onEdit, folder]);
   const handleRemove = useCallback(() => onRemove(index), [onRemove, index]);
   return (
-    <SettingsAction
-      label={folder.label ?? (explorerBasename(folder.path) || folder.path)}
-      hint={hint}
-      actionLabel="Remove"
-      disabled={disabled}
-      onPress={handleRemove}
-    />
+    <SettingsRow label={folder.label ?? folderName(folder)} hint={hint}>
+      <View style={rowStyles.buttons}>
+        <TextButton
+          label="Edit"
+          disabled={disabled}
+          theme={theme}
+          styles={buttonStyles}
+          onPress={handleEdit}
+        />
+        <TextButton
+          label="Remove"
+          disabled={disabled}
+          theme={theme}
+          styles={buttonStyles}
+          onPress={handleRemove}
+        />
+      </View>
+    </SettingsRow>
   );
 }
+
+function folderName(folder: AllowedFolderSetting): string {
+  return explorerBasename(folder.path) || folder.path;
+}
+
+const rowStyles = StyleSheet.create({
+  buttons: { flexDirection: "row", gap: 8 },
+});
 
 interface AddFolderProps {
   settings: ReadySettings;

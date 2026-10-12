@@ -111,7 +111,10 @@ test("Command Center opens the Folders tab, files open as tabs that survive a re
   expect(await lastBlobDigest(page)).toEqual({ size: 300 * 1024, sha256: expected });
 });
 
-test("settings screen adds, validates and removes allowed folders", async ({ page, explorer }) => {
+test("settings screen adds, relabels, validates and removes allowed folders", async ({
+  page,
+  explorer,
+}) => {
   await openApp(page);
   await page.goto(`${state.origin}/settings/hosts/${state.serverId}/plugins/file-explorer/folders`);
   await expect(button(page, "Add")).toBeVisible();
@@ -129,6 +132,32 @@ test("settings screen adds, validates and removes allowed folders", async ({ pag
     .poll(async () => (await explorer.listFolders()).folders.map((folder) => folder.label))
     .toEqual(["QA", "missing", "Docs"]);
 
+  // Relabel with real clicks: the label field's placeholder is the folder name.
+  await button(page, "Edit").nth(2).click();
+  const labelInput = page.getByPlaceholder("docs", { exact: true });
+  await labelInput.click();
+  await page.keyboard.press("ControlOrMeta+A");
+  await page.keyboard.type("Documents");
+  await button(page, "Save").click();
+  await expect(visibleText(page, "Documents")).toBeVisible();
+  await expect(button(page, "Save")).toHaveCount(0);
+  await expect
+    .poll(async () => (await explorer.listFolders()).folders.map((folder) => folder.label))
+    .toEqual(["QA", "missing", "Documents"]);
+
+  // Cancel keeps the saved label; an empty label falls back to the folder name.
+  await button(page, "Edit").nth(2).click();
+  await labelInput.fill("Ignored");
+  await button(page, "Cancel").click();
+  await expect(visibleText(page, "Documents")).toBeVisible();
+  await button(page, "Edit").nth(2).click();
+  await labelInput.fill("");
+  await button(page, "Save").click();
+  await expect(visibleText(page, "docs")).toBeVisible();
+  await expect
+    .poll(async () => (await explorer.listFolders()).folders.map((folder) => folder.label))
+    .toEqual(["QA", "missing", "docs"]);
+
   await page.getByPlaceholder("~/notes", { exact: true }).fill("relative/path");
   await button(page, "Add").click();
   await expect(visibleText(page, /Use an absolute path/)).toBeVisible();
@@ -136,7 +165,7 @@ test("settings screen adds, validates and removes allowed folders", async ({ pag
 
   await remove.nth(2).click();
   await expect(remove).toHaveCount(2);
-  await expect(visibleText(page, "Docs")).toHaveCount(0);
+  await expect(visibleText(page, "docs")).toHaveCount(0);
   await expect
     .poll(async () => (await explorer.listFolders()).folders.map((folder) => folder.label))
     .toEqual(["QA", "missing"]);

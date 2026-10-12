@@ -50,3 +50,17 @@ function normalizeForComparison(path: string): string {
   if (trimmed === "/" || /^[A-Za-z]:[\\/]$/.test(trimmed)) return trimmed;
   return trimmed.replace(/[\\/]+$/, "");
 }
+
+// Matches by path rather than index so a list that changed since the row rendered still updates
+// the right folder. An empty label falls back to the folder name, as it does when adding.
+export function relabelFolder(
+  folders: readonly AllowedFolderSetting[],
+  path: string,
+  label: string,
+): AllowedFolderSetting[] {
+  const trimmed = label.trim();
+  return folders.map((folder) => {
+    if (folder.path !== path) return folder;
+    return trimmed ? { path: folder.path, label: trimmed } : { path: folder.path };
+  });
+}

@@ -707,16 +707,18 @@ function TextButton({
   onPress,
   icon,
   busy = false,
+  disabled = false,
   theme: theme2,
   styles
 }) {
+  var isDisabled = busy || disabled;
   var accessibilityState = useMemo(() => ({
-    disabled: busy,
+    disabled: isDisabled,
     busy
-  }), [busy]);
+  }), [isDisabled, busy]);
   var pressableStyle = useCallback(({
     pressed
-  }) => [styles.textButton, pressed ? styles.iconButtonHighlighted : null], [styles]);
+  }) => [styles.textButton, pressed ? styles.iconButtonHighlighted : null, disabled ? styles.disabled : null], [disabled, styles]);
   var leading = null;
   if (busy) {
     leading = /* @__PURE__ */jsx(ActivityIndicator, {
@@ -733,7 +735,7 @@ function TextButton({
   return /* @__PURE__ */jsxs(Pressable, {
     accessibilityRole: "button",
     accessibilityState,
-    disabled: busy,
+    disabled: isDisabled,
     onPress,
     style: pressableStyle,
     children: [leading ? /* @__PURE__ */jsx(View, {
@@ -31979,7 +31981,7 @@ import { useSettings as useSettings2 } from "@getpaseo/plugin/client";
 import { SettingsAction, SettingsCard, SettingsInput, SettingsRow, SettingsSection } from "@getpaseo/plugin/client/ui";
 import { useQueryClient as useQueryClient2 } from "@tanstack/react-query";
 import { useCallback as useCallback14, useMemo as useMemo14, useRef as useRef2, useState as useState9 } from "react";
-import { Text as Text13 } from "react-native";
+import { StyleSheet as StyleSheet2, Text as Text13, View as View14 } from "react-native";
 
 // client/settings/folder-draft.ts
 function isAcceptedFolderPath(path) {
@@ -32024,6 +32026,18 @@ function normalizeForComparison(path) {
   var trimmed = path.trim();
   if (trimmed === "/" || /^[A-Za-z]:[\\/]$/.test(trimmed)) return trimmed;
   return trimmed.replace(/[\\/]+$/, "");
+}
+function relabelFolder(folders, path, label) {
+  var trimmed = label.trim();
+  return folders.map(folder => {
+    if (folder.path !== path) return folder;
+    return trimmed ? {
+      path: folder.path,
+      label: trimmed
+    } : {
+      path: folder.path
+    };
+  });
 }
 
 // client/settings/folder-status.ts
@@ -32106,13 +32120,16 @@ function FoldersSettings({
     });
   }
   return /* @__PURE__ */jsx18(FoldersEditor, {
-    settings
+    settings,
+    theme: theme2
   });
 }
 function FoldersEditor({
-  settings
+  settings,
+  theme: theme2
 }) {
   var queryClient = useQueryClient2();
+  var buttonStyles = useMemo14(() => createViewerStyles(theme2, false), [theme2]);
   var folders = useAllowedFolders();
   var statuses = useMemo14(() => matchFolderStatuses(settings.values.folders, folders.data ?? []), [folders.data, settings.values.folders]);
   var saveFolders = useCallback14(next => __async(null, null, function* () {
@@ -32128,6 +32145,23 @@ function FoldersEditor({
   var remove2 = useCallback14(index => {
     void saveFolders(settings.values.folders.filter((_, candidate) => candidate !== index));
   }, [saveFolders, settings.values.folders]);
+  var [editingPath, setEditingPath] = useState9(null);
+  var [draftLabel, setDraftLabel] = useState9("");
+  var startEditing = useCallback14(folder => {
+    setDraftLabel(folder.label ?? "");
+    setEditingPath(folder.path);
+  }, []);
+  var cancelEditing = useCallback14(() => setEditingPath(null), []);
+  var saveLabel = useCallback14(() => {
+    function run() {
+      return __async(this, null, function* () {
+        if (editingPath === null) return;
+        var next = relabelFolder(settings.values.folders, editingPath, draftLabel);
+        if (yield saveFolders(next)) setEditingPath(null);
+      });
+    }
+    void run();
+  }, [draftLabel, editingPath, saveFolders, settings.values.folders]);
   return /* @__PURE__ */jsxs11(Fragment2, {
     children: [/* @__PURE__ */jsx18(SettingsSection, {
       title: "Allowed folders",
@@ -32136,11 +32170,41 @@ function FoldersEditor({
         children: settings.values.folders.length === 0 ? /* @__PURE__ */jsx18(SettingsRow, {
           label: "No folders yet",
           hint: "Add a folder below to browse it in Paseo"
-        }) : settings.values.folders.map((folder, index) => /* @__PURE__ */jsx18(FolderRow, {
+        }) : settings.values.folders.map((folder, index) => folder.path === editingPath ? [/* @__PURE__ */jsx18(SettingsInput, {
+          label: "Label",
+          hint: folder.path,
+          initialValue: folder.label ?? "",
+          placeholder: folderName(folder),
+          disabled: settings.saving,
+          onChangeText: setDraftLabel
+        }, `${folder.path}:label`), /* @__PURE__ */jsx18(SettingsRow, {
+          label: "Save label",
+          hint: "Leave it empty to show the folder name",
+          error: settings.saveError,
+          children: /* @__PURE__ */jsxs11(View14, {
+            style: rowStyles.buttons,
+            children: [/* @__PURE__ */jsx18(TextButton, {
+              label: "Cancel",
+              disabled: settings.saving,
+              theme: theme2,
+              styles: buttonStyles,
+              onPress: cancelEditing
+            }), /* @__PURE__ */jsx18(TextButton, {
+              label: settings.saving ? "Saving..." : "Save",
+              disabled: settings.saving,
+              theme: theme2,
+              styles: buttonStyles,
+              onPress: saveLabel
+            })]
+          })
+        }, `${folder.path}:save`)] : /* @__PURE__ */jsx18(FolderRow, {
           folder,
           index,
           hint: folderHint(folder, statuses[index], folders.isPending),
           disabled: settings.saving,
+          theme: theme2,
+          buttonStyles,
+          onEdit: startEditing,
           onRemove: remove2
         }, folder.path))
       })
@@ -32155,17 +32219,43 @@ function FolderRow({
   index,
   hint,
   disabled,
+  theme: theme2,
+  buttonStyles,
+  onEdit,
   onRemove
 }) {
+  var handleEdit = useCallback14(() => onEdit(folder), [onEdit, folder]);
   var handleRemove = useCallback14(() => onRemove(index), [onRemove, index]);
-  return /* @__PURE__ */jsx18(SettingsAction, {
-    label: folder.label ?? (explorerBasename(folder.path) || folder.path),
+  return /* @__PURE__ */jsx18(SettingsRow, {
+    label: folder.label ?? folderName(folder),
     hint,
-    actionLabel: "Remove",
-    disabled,
-    onPress: handleRemove
+    children: /* @__PURE__ */jsxs11(View14, {
+      style: rowStyles.buttons,
+      children: [/* @__PURE__ */jsx18(TextButton, {
+        label: "Edit",
+        disabled,
+        theme: theme2,
+        styles: buttonStyles,
+        onPress: handleEdit
+      }), /* @__PURE__ */jsx18(TextButton, {
+        label: "Remove",
+        disabled,
+        theme: theme2,
+        styles: buttonStyles,
+        onPress: handleRemove
+      })]
+    })
   });
 }
+function folderName(folder) {
+  return explorerBasename(folder.path) || folder.path;
+}
+var rowStyles = StyleSheet2.create({
+  buttons: {
+    flexDirection: "row",
+    gap: 8
+  }
+});
 function AddFolder({
   settings,
   onSave
