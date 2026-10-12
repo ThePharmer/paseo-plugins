@@ -12,6 +12,8 @@
     "generate:icons": "npm run generate:icons --prefix file-explorer",
     "build:client": "node scripts/plugins.mjs run build:client --if-present",
     "drift": "node scripts/check-upstream-drift.mjs --dry-run",
+    "release:check": "node scripts/release-check.mjs",
+    "release:dry-run": "node scripts/release-publish.mjs --dry-run",
     "format": "oxfmt .",
     "format:files": "oxfmt",
     "format:check": "oxfmt --check .",
