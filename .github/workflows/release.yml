@@ -1,0 +1,46 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Queue runs instead of cancelling one that may be halfway through tagging.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    name: release
+    # A manual run on another branch must not tag it.
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Check changelogs
+        run: node scripts/release-check.mjs
+
+      # Tags <plugin>/v<version> and creates its GitHub Release for every plugin version that has
+      # no tag on origin yet. Does nothing when every version is already released.
+      - name: Publish releases
+        run: node scripts/release-publish.mjs
+        env:
+          GH_TOKEN: ${{ github.token }}

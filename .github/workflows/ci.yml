@@ -33,6 +33,35 @@ jobs:
       - name: Check formatting
         run: npm run format:check
 
+  # Each plugin's CHANGELOG.md must match its package.json version. On a pull request, a changed
+  # CHANGELOG.md also needs a version bump unless only "## Unreleased" changed.
+  release-check:
+    name: release-check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      # The PR checkout is the merge commit, so the base branch tip is the right comparison.
+      - name: Fetch base branch
+        if: github.event_name == 'pull_request'
+        run: git fetch --no-tags --depth=1 origin "+refs/heads/${BASE_REF}:refs/remotes/origin/${BASE_REF}"
+        env:
+          BASE_REF: ${{ github.base_ref }}
+
+      - name: Check changelogs against the base branch
+        if: github.event_name == 'pull_request'
+        run: node scripts/release-check.mjs --base "origin/${BASE_REF}"
+        env:
+          BASE_REF: ${{ github.base_ref }}
+
+      - name: Check changelogs
+        if: github.event_name != 'pull_request'
+        run: node scripts/release-check.mjs
+
   lint:
     name: lint
     runs-on: ubuntu-latest
