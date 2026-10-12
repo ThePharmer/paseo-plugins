@@ -3,7 +3,7 @@
   "options": {
     "typeAware": false
   },
-  "ignorePatterns": ["**/node_modules/**", "**/*.generated.ts"],
+  "ignorePatterns": ["**/node_modules/**", "**/*.generated.ts", "*/client/dist/**"],
   "plugins": ["react", "react-perf", "unicorn", "typescript", "oxc", "import", "promise"],
   "categories": {
     "correctness": "error",

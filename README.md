@@ -29,7 +29,7 @@ Known limits:
 - Read-only. Create, rename, duplicate, delete, upload, editing, and live updates are planned.
 - Markdown shows as highlighted source; there is no rendered preview yet.
 - On iOS and Android, Download opens the share sheet through the Paseo app's own Expo modules, and file tabs are restored after an app restart through the app's SQLite module. Neither is a documented plugin API, so a Paseo app update can turn them off. The plugin detects that and falls back: no native download on Android, the plain share sheet on iOS, and file tabs that need reopening after a restart.
-- The client bundle is about 1.8 MB, mostly syntax-highlighting grammars.
+- The client bundle is about 1.9 MB, mostly syntax-highlighting grammars.
 
 ## License
 

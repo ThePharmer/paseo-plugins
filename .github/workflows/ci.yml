@@ -100,6 +100,46 @@ jobs:
           npm run generate:icons --prefix file-explorer
           git diff --exit-code -- file-explorer/client/file-icons.generated.ts
 
+      # The prebuilt client (see file-explorer/scripts/build-client.mjs) must match its source.
+      - name: Verify prebuilt client
+        run: |
+          npm run build:client
+          git diff --exit-code -- file-explorer/client/dist
+
+  hermes-smoke:
+    name: hermes-smoke
+    runs-on: ubuntu-latest
+    env:
+      # v0.13.0 is older than the Hermes in the Paseo app. See scripts/hermes-smoke/run.mjs.
+      HERMES_VERSION: v0.13.0
+      HERMES_CLI_LINUX_SHA256: aead6eb0b8f563bb022354352eae32dad96c933330b6c1941b6db17674ca68ae
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: "**/package-lock.json"
+
+      - name: Install plugin dependencies
+        run: npm run install:plugins
+
+      - name: Install Hermes CLI
+        run: |
+          set -euo pipefail
+          dir="$RUNNER_TEMP/hermes"
+          mkdir -p "$dir"
+          curl --fail --location --retry 3 --silent --show-error \
+            --output "$dir/hermes-cli-linux.tar.gz" \
+            "https://github.com/facebook/hermes/releases/download/${HERMES_VERSION}/hermes-cli-linux.tar.gz"
+          echo "${HERMES_CLI_LINUX_SHA256}  $dir/hermes-cli-linux.tar.gz" | sha256sum --check --strict
+          tar -xzf "$dir/hermes-cli-linux.tar.gz" -C "$dir" ./hermes
+          echo "HERMES_BIN=$dir/hermes" >> "$GITHUB_ENV"
+
+      - name: Run Hermes smoke test
+        run: npm run test:hermes
+
   plugin-tests-ubuntu:
     name: plugin-tests (ubuntu-latest)
     runs-on: ubuntu-latest
